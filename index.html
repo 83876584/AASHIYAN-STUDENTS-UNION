@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AASHIYAN Students Union</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{brand:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d'},sidebar:'#0b2414'},fontFamily:{display:['Outfit','sans-serif'],body:['DM Sans','sans-serif']}}}}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#f1f5f9;overflow:hidden;height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#166534;border-radius:3px}
+.sidebar{background:linear-gradient(180deg,#0b2414,#0f3620,#0b2414)}
+.nav-item{transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(34,197,94,.1);border-left-color:rgba(34,197,94,.4)}
+.nav-item.active{background:rgba(34,197,94,.15);border-left-color:#22c55e;color:#22c55e}
+.page{display:none;animation:fadeUp .3s ease}.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stat-card{animation:fadeUp .4s ease both}.stat-card:nth-child(2){animation-delay:.08s}.stat-card:nth-child(3){animation-delay:.16s}.stat-card:nth-child(4){animation-delay:.24s}
+.card-h{transition:all .25s ease}.card-h:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.modal-overlay{background:rgba(0,0,0,.5);backdrop-filter:blur(4px)}
+.modal-box{animation:mIn .3s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.toast{animation:tIn .3s ease,tOut .3s ease 2.7s forwards}
+@keyframes tIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tOut{to{opacity:0;transform:translateX(40px)}}
+.badge{font-size:10px;padding:2px 8px;border-radius:9999px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+.photo-grid-item{overflow:hidden;border-radius:12px;cursor:pointer;position:relative}
+.photo-grid-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.photo-grid-item:hover img{transform:scale(1.08)}
+.photo-grid-item .ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 50%);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:12px}
+.photo-grid-item:hover .ov{opacity:1}
+#studentPanel{transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+#studentPanel.open{transform:translateX(0)}
+.ledger-r:nth-child(even){background:#f8fafc}.ledger-r:hover{background:#f0fdf4}
+</style>
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside class="sidebar w-56 flex-shrink-0 flex flex-col text-gray-300 z-30">
+  <div class="p-5 border-b border-white/10">
+    <h1 class="font-display font-800 text-lg text-white tracking-tight">AASHIYAN</h1>
+    <p class="text-[10px] text-brand-400 font-semibold tracking-[.2em] uppercase mt-0.5">Students Union</p>
+  </div>
+  <nav class="flex-1 py-4 px-2 space-y-1">
+    <a class="nav-item active flex items-center gap-3 px-4 py-2.5 rounded-r-lg cursor-pointer text-sm" data-page="dashboard"><i class="fas fa-th-large w-5 text-center"></i><span>Dashboard</span></a>
+    <a class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg cursor-pointer text-sm" data-page="students"><i class="fas fa-users w-5 text-center"></i><span>Students</span></a>
+    <a class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg cursor-pointer text-sm" data-page="gallery"><i class="fas fa-images w-5 text-center"></i><span>Gallery</span></a>
+    <a class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg cursor-pointer text-sm" data-page="achievements"><i class="fas fa-trophy w-5 text-center"></i><span>Achievements</span></a>
+    <a class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg cursor-pointer text-sm" data-page="wallet"><i class="fas fa-wallet w-5 text-center"></i><span>eWallet</span></a>
+  </nav>
+  <div class="p-4 border-t border-white/10">
+    <button id="adminToggle" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm hover:bg-white/5 transition cursor-pointer">
+      <i class="fas fa-shield-halved w-5 text-center"></i><span id="adminLabel">Admin Login</span>
+    </button>
+  </div>
+  <div class="px-5 pb-4 flex items-center gap-2 text-[10px] text-gray-500">
+    <div class="pulse-dot" id="statusDot"></div><span id="footerTime">Loading...</span>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="flex-1 overflow-y-auto relative">
+
+<!-- Dashboard -->
+<div class="page active p-6 lg:p-8" id="page-dashboard">
+  <div class="flex items-center justify-between mb-8">
+    <div><h2 class="font-display font-700 text-2xl text-gray-900">Dashboard</h2><p class="text-gray-500 text-sm mt-1">Union overview</p></div>
+    <div class="text-right text-sm text-gray-400" id="dashDate"></div>
+  </div>
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-5 mb-8" id="statsGrid"></div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <h3 class="font-display font-600 text-lg mb-4 text-gray-800">Top Borrowers</h3>
+      <div id="topBorrowers" class="space-y-3"></div>
+    </div>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <h3 class="font-display font-600 text-lg mb-4 text-gray-800">Wallet Health</h3>
+      <div id="walletHealth" class="space-y-4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Students -->
+<div class="page p-6 lg:p-8" id="page-students">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div><h2 class="font-display font-700 text-2xl text-gray-900">Students</h2><p class="text-gray-500 text-sm mt-1" id="studentCount"></p></div>
+    <div class="relative"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i><input id="studentSearch" type="text" placeholder="Search by name or adm no..." class="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm w-64"></div>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="studentGrid"></div>
+</div>
+
+<!-- Gallery -->
+<div class="page p-6 lg:p-8" id="page-gallery">
+  <div class="flex items-center justify-between mb-6">
+    <div><h2 class="font-display font-700 text-2xl text-gray-900">Gallery</h2><p class="text-gray-500 text-sm mt-1">Event photos & memories</p></div>
+    <button id="uploadBtn" class="hidden bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 rounded-xl text-sm font-600 transition cursor-pointer"><i class="fas fa-cloud-upload-alt mr-1.5"></i>Upload</button>
+  </div>
+  <div id="galleryGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+  <div id="galleryEmpty" class="hidden flex-col items-center justify-center py-20 text-gray-400"><i class="fas fa-images text-5xl mb-4 text-gray-300"></i><p class="text-lg font-500">No photos yet</p></div>
+</div>
+
+<!-- Achievements -->
+<div class="page p-6 lg:p-8" id="page-achievements">
+  <div class="flex items-center justify-between mb-6">
+    <div><h2 class="font-display font-700 text-2xl text-gray-900">Achievements</h2><p class="text-gray-500 text-sm mt-1">Union accomplishments</p></div>
+    <button id="addAchBtn" class="hidden bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 rounded-xl text-sm font-600 transition cursor-pointer"><i class="fas fa-plus mr-1.5"></i>Add</button>
+  </div>
+  <div id="achGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  <div id="achEmpty" class="hidden flex-col items-center justify-center py-20 text-gray-400"><i class="fas fa-trophy text-5xl mb-4 text-gray-300"></i><p class="text-lg font-500">No achievements yet</p></div>
+</div>
+
+<!-- eWallet -->
+<div class="page p-6 lg:p-8" id="page-wallet">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div><h2 class="font-display font-700 text-2xl text-gray-900">eWallet — Khata Book</h2><p class="text-gray-500 text-sm mt-1">Per-student deposit & borrowing tracker</p></div>
+    <div class="flex items-center gap-3">
+      <div class="relative"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i><input id="walletSearch" type="text" placeholder="Search..." class="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm w-48"></div>
+      <button onclick="printDefaulters()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-600 transition cursor-pointer"><i class="fas fa-print mr-1.5"></i>Print Defaulters</button>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6" id="walletStats"></div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="walletGrid"></div>
+</div>
+
+<!-- Student Detail Panel -->
+<div id="panelOverlay" class="hidden fixed inset-0 bg-black/30 z-40 cursor-pointer" onclick="closePanel()"></div>
+<div id="studentPanel" class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-50 overflow-y-auto">
+  <div id="panelContent"></div>
+</div>
+
+</main>
+
+<!-- Login Modal -->
+<div id="loginModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center modal-overlay">
+  <div class="modal-box bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl mx-4">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-shield-halved text-2xl text-brand-700"></i></div>
+      <h3 class="font-display font-700 text-xl">Admin Access</h3>
+      <p class="text-gray-500 text-sm mt-1">Enter password</p>
+    </div>
+    <input id="loginPass" type="password" placeholder="Password" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm mb-4" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="flex gap-3">
+      <button onclick="closeModal('loginModal')" class="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm font-600 hover:bg-gray-50 transition cursor-pointer">Cancel</button>
+      <button onclick="doLogin()" class="flex-1 px-4 py-3 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-sm font-600 transition cursor-pointer">Login</button>
+    </div>
+    <p id="loginError" class="hidden text-red-500 text-xs text-center mt-3">Incorrect password</p>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center modal-overlay">
+  <div class="modal-box bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl mx-4">
+    <h3 class="font-display font-700 text-xl mb-6">Upload to Gallery</h3>
+    <div class="space-y-4">
+      <div><label class="block text-xs font-600 text-gray-500 mb-1.5">Title</label><input id="upTitle" type="text" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm" placeholder="Event name..."></div>
+      <div><label class="block text-xs font-600 text-gray-500 mb-1.5">Category</label><input id="upCat" type="text" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm" placeholder="Fresher's Party..."></div>
+      <div>
+        <label class="block text-xs font-600 text-gray-500 mb-2">File</label>
+        <label class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl py-8 cursor-pointer hover:border-brand-500 hover:bg-brand-50 transition">
+          <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i><span class="text-sm text-gray-500">Click to select</span>
+          <input id="upFile" type="file" accept="image/*" class="hidden" onchange="previewUpload(this)">
+        </label>
+        <div id="upPreview" class="hidden mt-3 rounded-xl overflow-hidden"></div>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeModal('uploadModal')" class="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm font-600 hover:bg-gray-50 transition cursor-pointer">Cancel</button>
+      <button onclick="saveUpload()" class="flex-1 px-4 py-3 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-sm font-600 transition cursor-pointer">Upload</button>
+    </div>
+  </div>
+</div>
+
+<!-- Achievement Modal -->
+<div id="achModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center modal-overlay">
+  <div class="modal-box bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl mx-4">
+    <h3 class="font-display font-700 text-xl mb-6">Add Achievement</h3>
+    <div class="space-y-4">
+      <div><label class="block text-xs font-600 text-gray-500 mb-1.5">Title</label><input id="achTitle" type="text" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm"></div>
+      <div><label class="block text-xs font-600 text-gray-500 mb-1.5">Description</label><textarea id="achDesc" rows="3" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm resize-none"></textarea></div>
+      <div><label class="block text-xs font-600 text-gray-500 mb-1.5">Date</label><input id="achDate" type="date" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm"></div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeModal('achModal')" class="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm font-600 hover:bg-gray-50 transition cursor-pointer">Cancel</button>
+      <button onclick="saveAch()" class="flex-1 px-4 py-3 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-sm font-600 transition cursor-pointer">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 cursor-pointer" onclick="closeModal('lightbox')">
+  <button class="absolute top-4 right-4 text-white text-2xl hover:scale-110 transition cursor-pointer z-10"><i class="fas fa-times"></i></button>
+  <img id="lbImg" class="max-w-[90vw] max-h-[90vh] rounded-2xl shadow-2xl" onclick="event.stopPropagation()">
+</div>
+
+<div id="toastBox" class="fixed top-4 right-4 z-[70] space-y-2"></div>
+
+<script>
+const ADMIN_PASS='aashiyan2025';
+const SHEET_API='https://script.google.com/macros/s/AKfycbzGgeC7w7Vl0DizlGckI6hRdw-QXSrab1gG4sAZ0ROnFPQ6N7Shc6Irexrg3XlzrfSv/exec';
+
+// Fallback student data (exact match from your sheet)
+const FALLBACK=[
+  {admission_no:'926',name:'Faseeh',deposit:10,borrowings:5,balance:5},
+  {admission_no:'949',name:'Siras',deposit:100,borrowings:150,balance:-50},
+  {admission_no:'954',name:'Fuad',deposit:500,borrowings:600,balance:-100},
+  {admission_no:'957',name:'Mashu',deposit:50,borrowings:25,balance:25},
+  {admission_no:'959',name:'Ijlan',deposit:100,borrowings:500,balance:-400},
+  {admission_no:'960',name:'Musthafa',deposit:0,borrowings:0,balance:0},
+  {admission_no:'961',name:'Sabeel',deposit:0,borrowings:0,balance:0},
+  {admission_no:'963',name:'Dhanihs',deposit:0,borrowings:0,balance:0},
+  {admission_no:'965',name:'Sabth Mt',deposit:0,borrowings:0,balance:0},
+  {admission_no:'966',name:'Rami',deposit:0,borrowings:0,balance:0},
+  {admission_no:'968',name:'Aflah',deposit:0,borrowings:0,balance:0},
+  {admission_no:'969',name:'Ibrahim',deposit:0,borrowings:0,balance:0},
+  {admission_no:'971',name:'Sinan',deposit:0,borrowings:0,balance:0},
+  {admission_no:'972',name:'Swat',deposit:0,borrowings:0,balance:0},
+  {admission_no:'973',name:'Shaheem',deposit:0,borrowings:0,balance:0},
+  {admission_no:'974',name:'Arshad',deposit:0,borrowings:0,balance:0},
+  {admission_no:'978',name:'Basith',deposit:0,borrowings:0,balance:0},
+  {admission_no:'979',name:'Nasim',deposit:0,borrowings:0,balance:0},
+  {admission_no:'982',name:'Junaid',deposit:0,borrowings:0,balance:0},
+  {admission_no:'984',name:'Suhail',deposit:0,borrowings:0,balance:0},
+  {admission_no:'986',name:'Safi',deposit:0,borrowings:0,balance:0},
+  {admission_no:'987',name:'Labeeb',deposit:0,borrowings:0,balance:0},
+  {admission_no:'989',name:'Jasir',deposit:0,borrowings:0,balance:0},
+  {admission_no:'991',name:'Khair',deposit:0,borrowings:0,balance:0},
+  {admission_no:'992',name:'Muneef',deposit:0,borrowings:0,balance:0},
+  {admission_no:'994',name:'Sabith',deposit:0,borrowings:0,balance:0},
+  {admission_no:'995',name:'Farah',deposit:0,borrowings:0,balance:0},
+  {admission_no:'996',name:'Abdurahma',deposit:0,borrowings:0,balance:0},
+  {admission_no:'1091',name:'Hisham',deposit:0,borrowings:0,balance:0}
+];
+
+const DEFAULT_GALLERY=[
+  {id:1,url:"https://picsum.photos/seed/evt1/600/400",title:"Fresher's Party 2025",category:"Events",date:"2025-01-15"},
+  {id:2,url:"https://picsum.photos/seed/evt2/600/400",title:"Science Exhibition",category:"Academics",date:"2025-01-20"},
+  {id:3,url:"https://picsum.photos/seed/evt3/600/400",title:"Sports Day",category:"Sports",date:"2025-02-01"},
+  {id:4,url:"https://picsum.photos/seed/evt4/600/400",title:"Cultural Night",category:"Events",date:"2025-02-05"},
+  {id:5,url:"https://picsum.photos/seed/evt5/600/400",title:"Republic Day",category:"Events",date:"2025-01-26"},
+  {id:6,url:"https://picsum.photos/seed/evt6/600/400",title:"Tree Plantation",category:"Social",date:"2025-02-10"}
+];
+const DEFAULT_ACH=[
+  {id:1,title:"Best Students Union",desc:"Awarded in inter-college competition 2025",date:"2025-02-15",icon:"fa-trophy"},
+  {id:2,title:"Clean Campus Award",desc:"Recognized for cleanest campus",date:"2025-01-20",icon:"fa-medal"}
+];
+
+let state={page:'dashboard',isAdmin:false,students:[],transactions:{},gallery:[],achievements:[],filters:{sSearch:'',wSearch:''}};
+let isSheetConnected=false;
+let uploadFileData=null;
+let currentPanelAdm='';
+
+// Helpers
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN');}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?d:dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function cap(n){return n.charAt(0).toUpperCase()+n.slice(1).toLowerCase();}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function getColor(s){const c=['#166534','#15803d','#059669','#0d9488','#0891b2','#0369a1','#4f46e5','#7c3aed','#9333ea','#c026d3','#db2777','#e11d48','#dc2626','#ea580c','#d97706','#65a30d'];let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return c[Math.abs(h)%c.length];}
+function toast(msg,type='success'){const b=document.getElementById('toastBox');const co={success:'bg-brand-700',error:'bg-red-500',warning:'bg-amber-500',info:'bg-blue-500'};const ic={success:'fa-check-circle',error:'fa-times-circle',warning:'fa-exclamation-triangle',info:'fa-info-circle'};const el=document.createElement('div');el.className=`toast ${co[type]} text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-500`;el.innerHTML=`<i class="fas ${ic[type]}"></i><span>${msg}</span>`;b.appendChild(el);setTimeout(()=>el.remove(),3000);}
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+
+// Storage
+function loadLocal(){
+  try{const s=localStorage.getItem('asu_v3');if(s){const p=JSON.parse(s);state.gallery=p.gallery||[...DEFAULT_GALLERY];state.achievements=p.achievements||[...DEFAULT_ACH];state.transactions=p.transactions||{};}else{state.gallery=[...DEFAULT_GALLERY];state.achievements=[...DEFAULT_ACH];state.transactions={};}}catch(e){state.gallery=[...DEFAULT_GALLERY];state.achievements=[...DEFAULT_ACH];state.transactions={};}
+  state.students=[...FALLBACK];
+}
+function saveLocal(){try{localStorage.setItem('asu_v3',JSON.stringify({gallery:state.gallery,achievements:state.achievements,transactions:state.transactions}));}catch(e){}}
+
+// Sheet API
+async function fetchSheet(){
+  try{
+    const r=await fetch(SHEET_API+'?action=read');
+    const j=await r.json();
+    if(j.status==='success'&&j.data.length){
+      state.students=j.data.map(s=>({admission_no:s.admission_no,name:s.name,deposit:s.deposit,borrowings:s.borrowings,balance:s.balance}));
+      // Generate initial transactions from sheet data for students who have values
+      state.students.forEach(s=>{
+        if(!state.transactions[s.admission_no])state.transactions[s.admission_no]=[];
+        const txs=state.transactions[s.admission_no];
+        const hasDeposit=txs.some(t=>t.type==='deposit');
+        if(!hasDeposit&&s.deposit>0)txs.push({id:1,date:'2026-09-04',type:'deposit',amount:s.deposit,desc:'Opening balance',balance:s.deposit});
+        const hasBorrow=txs.some(t=>t.type==='borrow');
+        if(!hasBorrow&&s.borrowings>0)txs.push({id:2,date:'2026-09-04',type:'borrow',amount:s.borrowings,desc:'Opening balance',balance:s.balance});
+      });
+      isSheetConnected=true;
+    }else{isSheetConnected=false;}
+  }catch(e){console.error(e);isSheetConnected=false;}
+}
+
+async function pushUpdate(admNo,deposit,borrowings,balance){
+  if(!isSheetConnected)return;
+  try{await fetch(SHEET_API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({admission_no:admNo,deposit,borrowings,balance})});}catch(e){console.error(e);}
+}
+
+// Navigation
+function navigate(page){
+  state.page=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  closePanel();
+  renderPage();
+}
+function renderPage(){
+  switch(state.page){case'dashboard':renderDash();break;case'students':renderStudents();break;case'gallery':renderGallery();break;case'achievements':renderAch();break;case'wallet':renderWallet();break;}
+  document.getElementById('uploadBtn').classList.toggle('hidden',!state.isAdmin);
+  document.getElementById('addAchBtn').classList.toggle('hidden',!state.isAdmin);
+}
+
+// Dashboard
+function renderDash(){
+  const st=state.students;
+  const totDep=st.reduce((s,x)=>s+x.deposit,0);
+  const totBor=st.reduce((s,x)=>s+x.borrowings,0);
+  const net=totDep-totBor;
+  const defCount=st.filter(x=>x.balance<0).length;
+  document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card card-h bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center"><i class="fas fa-users text-brand-700"></i></div><span class="badge bg-brand-100 text-brand-700">Active</span></div>
+      <p class="text-2xl font-display font-800 text-gray-900">${st.length}</p><p class="text-xs text-gray-500 mt-1">Total Members</p>
+    </div>
+    <div class="stat-card card-h bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center"><i class="fas fa-arrow-down text-green-600"></i></div><span class="badge bg-green-100 text-green-700">Income</span></div>
+      <p class="text-2xl font-display font-800 text-green-600">${fmt(totDep)}</p><p class="text-xs text-gray-500 mt-1">Total Deposits</p>
+    </div>
+    <div class="stat-card card-h bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center"><i class="fas fa-arrow-up text-red-500"></i></div><span class="badge bg-red-100 text-red-600">Alert</span></div>
+      <p class="text-2xl font-display font-800 text-red-500">${defCount}</p><p class="text-xs text-gray-500 mt-1">Defaulters (Owed)</p>
+    </div>
+    <div class="stat-card card-h bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative overflow-hidden">
+      ${isSheetConnected?'<div class="absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full"></div>':''}
+      <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center"><i class="fas fa-wallet text-emerald-600"></i></div><span class="badge bg-emerald-100 text-emerald-700">${isSheetConnected?'Live':'Offline'}</span></div>
+      <p class="text-2xl font-display font-800 ${net>=0?'text-brand-700':'text-red-600'}">${fmt(net)}</p><p class="text-xs text-gray-500 mt-1">Net Balance</p>
+    </div>`;
+
+  // Top borrowers
+  const borrowers=[...st].filter(s=>s.borrowings>0).sort((a,b)=>b.borrowings-a.borrowings).slice(0,5);
+  document.getElementById('topBorrowers').innerHTML=borrowers.length?borrowers.map(s=>`
+    <div class="flex items-center gap-3 py-2">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:${getColor(s.name)}">${initials(s.name)}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex justify-between items-center"><span class="text-sm font-600 text-gray-800 truncate">${cap(s.name)}</span><span class="text-sm font-700 text-red-500">${fmt(s.borrowings)}</span></div>
+        <div class="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden"><div class="h-full bg-red-400 rounded-full" style="width:${Math.min(s.borrowings/600*100,100)}%"></div></div>
+      </div>
+    </div>`).join(''):'<p class="text-gray-400 text-sm text-center py-6">No borrowings yet</p>';
+
+  // Wallet health
+  const active=st.filter(s=>s.deposit>0||s.borrowings>0).length;
+  const clear=st.filter(s=>s.balance>=0&&s.deposit>0).length;
+  const owed=st.filter(s=>s.balance<0).length;
+  const zero=st.length-active;
+  document.getElementById('walletHealth').innerHTML=`
+    <div class="flex items-center justify-between"><span class="text-sm text-gray-600">Cleared (Positive)</span><span class="text-sm font-700 text-green-600">${clear} members</span></div>
+    <div class="h-3 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-green-500 rounded-full" style="width:${st.length?clear/st.length*100:0}%"></div></div>
+    <div class="flex items-center justify-between mt-2"><span class="text-sm text-gray-600">Owed (Negative)</span><span class="text-sm font-700 text-red-500">${owed} members</span></div>
+    <div class="h-3 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-red-400 rounded-full" style="width:${st.length?owed/st.length*100:0}%"></div></div>
+    <div class="flex items-center justify-between mt-2"><span class="text-sm text-gray-600">No Activity</span><span class="text-sm font-700 text-gray-400">${zero} members</span></div>
+    <div class="h-3 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gray-300 rounded-full" style="width:${st.length?zero/st.length*100:0}%"></div></div>`;
+}
+
+// Students page
+function renderStudents(){
+  const q=state.filters.sSearch.toLowerCase();
+  let list=state.students;
+  if(q)list=list.filter(s=>s.name.toLowerCase().includes(q)||s.admission_no.includes(q));
+  document.getElementById('studentCount').textContent=`${list.length} union members`;
+  document.getElementById('studentGrid').innerHTML=list.map(s=>`
+    <div class="card-h bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="h-20 relative" style="background:linear-gradient(135deg,${getColor(s.name)},${getColor(s.name+'x')})"></div>
+      <div class="px-4 pb-4 -mt-10 text-center relative">
+        <div class="w-16 h-16 rounded-full mx-auto border-3 border-white shadow-md flex items-center justify-center text-white text-lg font-bold" style="background:${getColor(s.name)}">${initials(s.name)}</div>
+        <h4 class="font-display font-700 text-sm mt-2 text-gray-900">${cap(s.name)}</h4>
+        <span class="badge bg-gray-100 text-gray-600 mt-1 inline-block">Adm: ${s.admission_no}</span>
+        <div class="flex justify-center gap-4 mt-3 pt-3 border-t border-gray-50 text-xs">
+          <span class="text-green-600 font-600"><i class="fas fa-arrow-down mr-1"></i>${fmt(s.deposit)}</span>
+          <span class="text-red-500 font-600"><i class="fas fa-arrow-up mr-1"></i>${fmt(s.borrowings)}</span>
+          <span class="${s.balance>=0?'text-brand-700':'text-red-600'} font-700"><i class="fas fa-wallet mr-1"></i>${fmt(s.balance)}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// Gallery
+function renderGallery(){
+  const g=state.gallery;const grid=document.getElementById('galleryGrid');const empty=document.getElementById('galleryEmpty');
+  if(!g.length){grid.classList.add('hidden');empty.classList.remove('hidden');empty.classList.add('flex');}
+  else{grid.classList.remove('hidden');empty.classList.add('hidden');empty.classList.remove('flex');
+    grid.innerHTML=g.map(i=>`<div class="photo-grid-item aspect-[4/3] bg-gray-100"><img src="${i.url}" alt="${i.title}" loading="lazy" onerror="this.src='https://picsum.photos/seed/e/600/400'"><div class="ov"><div class="flex-1"><p class="text-white font-600 text-sm">${i.title}</p><p class="text-white/70 text-xs">${i.category}</p></div>${state.isAdmin?`<button onclick="event.stopPropagation();state.gallery=state.gallery.filter(x=>x.id!==${i.id});saveLocal();renderGallery();toast('Removed','info')" class="text-white/70 hover:text-red-400 cursor-pointer"><i class="fas fa-trash-alt text-sm"></i></button>`:''}</div><div onclick="document.getElementById('lbImg').src='${i.url}';openModal('lightbox')" class="absolute inset-0 cursor-pointer"></div></div>`).join('');}
+}
+function previewUpload(input){const f=input.files[0];if(!f)return;const p=document.getElementById('upPreview');p.classList.remove('hidden');const r=new FileReader();r.onload=e=>{p.innerHTML=`<img src="${e.target.result}" class="w-full max-h-48 object-cover rounded-xl">`;uploadFileData=e.target.result;};r.readAsDataURL(f);}
+function saveUpload(){
+  const t=document.getElementById('upTitle').value.trim();const c=document.getElementById('upCat').value.trim()||'General';
+  if(!t||!uploadFileData){toast('Fill all fields','error');return;}
+  state.gallery.push({id:Date.now(),url:uploadFileData,title:t,category:c,date:todayStr()});
+  saveLocal();closeModal('uploadModal');renderGallery();toast('Uploaded');
+  document.getElementById('upTitle').value='';document.getElementById('upCat').value='';document.getElementById('upFile').value='';document.getElementById('upPreview').classList.add('hidden');uploadFileData=null;
+}
+
+// Achievements
+function renderAch(){
+  const a=state.achievements;const grid=document.getElementById('achGrid');const empty=document.getElementById('achEmpty');
+  if(!a.length){grid.classList.add('hidden');empty.classList.remove('hidden');empty.classList.add('flex');}
+  else{grid.classList.remove('hidden');empty.classList.add('hidden');empty.classList.remove('flex');
+    const ib={'fa-trophy':'bg-amber-100 text-amber-600','fa-medal':'bg-orange-100 text-orange-600','fa-star':'bg-yellow-100 text-yellow-600','fa-award':'bg-emerald-100 text-emerald-600'};
+    grid.innerHTML=a.map(x=>`<div class="card-h bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative group"><div class="w-12 h-12 ${ib[x.icon]||ib['fa-trophy']} rounded-xl flex items-center justify-center mb-4"><i class="fas ${x.icon} text-xl"></i></div><h4 class="font-display font-700 text-gray-900">${x.title}</h4><p class="text-sm text-gray-500 mt-2">${x.desc}</p><p class="text-xs text-gray-400 mt-3"><i class="far fa-calendar mr-1"></i>${fmtDate(x.date)}</p>${state.isAdmin?`<button onclick="state.achievements=state.achievements.filter(z=>z.id!==${x.id});saveLocal();renderAch();toast('Removed','info')" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 w-7 h-7 bg-red-50 hover:bg-red-100 text-red-400 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"><i class="fas fa-trash-alt"></i></button>`:''}</div>`).join('');}
+}
+function saveAch(){
+  const t=document.getElementById('achTitle').value.trim();const d=document.getElementById('achDesc').value.trim();const dt=document.getElementById('achDate').value;
+  if(!t||!d||!dt){toast('Fill all fields','error');return;}
+  state.achievements.push({id:Date.now(),title:t,desc:d,date:dt,icon:'fa-trophy'});
+  saveLocal();closeModal('achModal');renderAch();toast('Achievement added');
+  document.getElementById('achTitle').value='';document.getElementById('achDesc').value='';document.getElementById('achDate').value=todayStr();
+}
+
+// eWallet
+function renderWallet(){
+  const st=state.students;const q=state.filters.wSearch.toLowerCase();
+  let list=st;
+  if(q)list=list.filter(s=>s.name.toLowerCase().includes(q)||s.admission_no.includes(q));
+  const totDep=st.reduce((s,x)=>s+x.deposit,0);
+  const totBor=st.reduce((s,x)=>s+x.borrowings,0);
+  const net=totDep-totBor;
+  const defCount=st.filter(x=>x.balance<0).length;
+
+  document.getElementById('walletStats').innerHTML=`
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p class="text-xs text-gray-500 mb-1">Total Deposits</p><p class="text-xl font-display font-800 text-green-600">${fmt(totDep)}</p></div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p class="text-xs text-gray-500 mb-1">Total Borrowed</p><p class="text-xl font-display font-800 text-red-500">${fmt(totBor)}</p></div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p class="text-xs text-gray-500 mb-1">Net Balance</p><p class="text-xl font-display font-800 ${net>=0?'text-brand-700':'text-red-600'}">${fmt(net)}</p></div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p class="text-xs text-gray-500 mb-1">Defaulters</p><p class="text-xl font-display font-800 text-orange-600">${defCount} <span class="text-xs font-400 text-gray-400">members</span></p></div>`;
+
+  document.getElementById('walletGrid').innerHTML=list.map(s=>{
+    const balColor=s.balance>0?'text-green-600':s.balance<0?'text-red-500':'text-gray-400';
+    const barBg=s.balance>0?'bg-green-500':s.balance<0?'bg-red-400':'bg-gray-300';
+    const maxVal=Math.max(s.deposit,s.borrowings,1);
+    const depW=s.deposit/maxVal*100;
+    const borW=s.borrowings/maxVal*100;
+    const statusBadge=s.balance<0?'<span class="badge bg-red-100 text-red-600">OWES</span>':s.balance>0?'<span class="badge bg-green-100 text-green-700">CLEAR</span>':'<span class="badge bg-gray-100 text-gray-500">NIL</span>';
+    return`<div onclick="openPanel('${s.admission_no}')" class="card-h bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:${getColor(s.name)}">${initials(s.name)}</div>
+        <div class="min-w-0"><p class="font-display font-700 text-sm text-gray-900 truncate">${cap(s.name)}</p><p class="text-[11px] text-gray-400">#${s.admission_no}</p></div>
+      </div>
+      <div class="flex items-center gap-1 mb-2">${statusBadge}</div>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2"><span class="text-[10px] text-gray-400 w-12">Dep</span><div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-green-400 rounded-full" style="width:${depW}%"></div></div><span class="text-[10px] text-green-600 font-600 w-12 text-right">${fmt(s.deposit)}</span></div>
+        <div class="flex items-center gap-2"><span class="text-[10px] text-gray-400 w-12">Bor</span><div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-red-400 rounded-full" style="width:${borW}%"></div></div><span class="text-[10px] text-red-500 font-600 w-12 text-right">${fmt(s.borrowings)}</span></div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-gray-50 flex justify-between items-center">
+        <span class="text-[11px] text-gray-400">Balance</span>
+        <span class="text-sm font-display font-800 ${balColor}">${fmt(s.balance)}</span>
+      </div>
+    </div>`;}).join('');
+}
+
+// Student Detail Panel
+function openPanel(admNo){
+  currentPanelAdm=admNo;
+  renderPanel();
+  document.getElementById('studentPanel').classList.add('open');
+  document.getElementById('panelOverlay').classList.remove('hidden');
+}
+function closePanel(){
+  document.getElementById('studentPanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.add('hidden');
+  currentPanelAdm='';
+}
+
+function renderPanel(){
+  const s=state.students.find(x=>x.admission_no===currentPanelAdm);
+  if(!s)return;
+  const txs=state.transactions[currentPanelAdm]||[];
+  const balColor=s.balance>0?'text-green-600':s.balance<0?'text-red-500':'text-gray-400';
+  const statusText=s.balance<0?'Owes Money':s.balance>0?'In Clear':'No Activity';
+  const statusBg=s.balance<0?'bg-red-50 text-red-600 border-red-200':s.balance>0?'bg-green-50 text-green-700 border-green-200':'bg-gray-50 text-gray-500 border-gray-200';
+
+  document.getElementById('panelContent').innerHTML=`
+    <div class="h-32 relative" style="background:linear-gradient(135deg,${getColor(s.name)},${getColor(s.name+'x')})">
+      <button onclick="closePanel()" class="absolute top-4 left-4 w-9 h-9 bg-white/20 hover:bg-white/40 text-white rounded-lg flex items-center justify-center transition cursor-pointer"><i class="fas fa-arrow-left"></i></button>
+      <button onclick="printStudent('${s.admission_no}')" class="absolute top-4 right-4 w-9 h-9 bg-white/20 hover:bg-white/40 text-white rounded-lg flex items-center justify-center transition cursor-pointer" title="Print Statement"><i class="fas fa-print"></i></button>
+      <div class="absolute -bottom-10 left-6">
+        <div class="w-20 h-20 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold" style="background:${getColor(s.name)}">${initials(s.name)}</div>
+      </div>
+    </div>
+    <div class="pt-14 px-6 pb-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="font-display font-800 text-xl text-gray-900">${cap(s.name)}</h3>
+          <p class="text-sm text-gray-400">Admission No: ${s.admission_no}</p>
+        </div>
+        <span class="badge ${statusBg} border px-3 py-1 text-xs">${statusText}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="bg-green-50 rounded-xl p-3 text-center"><p class="text-xs text-green-600 mb-1">Deposited</p><p class="font-display font-800 text-green-700">${fmt(s.deposit)}</p></div>
+        <div class="bg-red-50 rounded-xl p-3 text-center"><p class="text-xs text-red-500 mb-1">Borrowed</p><p class="font-display font-800 text-red-600">${fmt(s.borrowings)}</p></div>
+        <div class="bg-gray-50 rounded-xl p-3 text-center"><p class="text-xs text-gray-500 mb-1">Balance</p><p class="font-display font-800 ${balColor}">${fmt(s.balance)}</p></div>
+      </div>
+
+      ${state.isAdmin?`
+      <div class="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-6">
+        <h4 class="font-display font-600 text-sm text-brand-800 mb-3"><i class="fas fa-plus-circle mr-1.5"></i>Add Transaction</h4>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <button onclick="setTxType('deposit')" id="btnDeposit" class="tx-type-btn px-3 py-2.5 rounded-lg text-sm font-600 border-2 border-green-500 bg-green-500 text-white transition cursor-pointer">Deposit</button>
+          <button onclick="setTxType('borrow')" id="btnBorrow" class="tx-type-btn px-3 py-2.5 rounded-lg text-sm font-600 border-2 border-gray-200 bg-white text-gray-600 transition cursor-pointer">Borrow</button>
+        </div>
+        <input type="hidden" id="panelTxType" value="deposit">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-[10px] font-600 text-gray-500 mb-1">Date</label><input id="panelTxDate" type="date" value="${todayStr()}" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-[10px] font-600 text-gray-500 mb-1">Amount (₹)</label><input id="panelTxAmt" type="number" min="1" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="0"></div>
+        </div>
+        <div class="mt-3"><label class="block text-[10px] font-600 text-gray-500 mb-1">Description</label><input id="panelTxDesc" type="text" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Reason..."></div>
+        <button onclick="addPanelTx()" class="mt-3 w-full py-2.5 bg-brand-700 hover:bg-brand-800 text-white rounded-lg text-sm font-600 transition cursor-pointer">Save Transaction</button>
+      </div>`:''}
+
+      <h4 class="font-display font-600 text-sm text-gray-800 mb-3"><i class="fas fa-list mr-1.5"></i>Transaction History</h4>
+      ${txs.length?`<div class="space-y-2">${txs.map((t,i)=>{
+        const isD=t.type==='deposit';
+        return`<div class="flex items-center gap-3 py-2.5 px-3 rounded-xl ${isD?'bg-green-50':'bg-red-50'}">
+          <div class="w-8 h-8 rounded-lg ${isD?'bg-green-200 text-green-700':'bg-red-200 text-red-700'} flex items-center justify-center text-xs"><i class="fas ${isD?'fa-arrow-down':'fa-arrow-up'}"></i></div>
+          <div class="flex-1 min-w-0"><p class="text-sm font-600 text-gray-800">${t.desc}</p><p class="text-[10px] text-gray-400">${fmtDate(t.date)}</p></div>
+          <span class="text-sm font-700 ${isD?'text-green-600':'text-red-500'}">${isD?'+':'-'}${fmt(t.amount)}</span>
+        </div>`;}).join('')}</div>`:'<p class="text-gray-400 text-sm text-center py-8 bg-gray-50 rounded-xl">No transactions yet</p>'}
+    </div>`;
+}
+
+function setTxType(type){
+  document.getElementById('panelTxType').value=type;
+  const bd=document.getElementById('btnDeposit');
+  const bb=document.getElementById('btnBorrow');
+  if(type==='deposit'){bd.className='tx-type-btn px-3 py-2.5 rounded-lg text-sm font-600 border-2 border-green-500 bg-green-500 text-white transition cursor-pointer';bb.className='tx-type-btn px-3 py-2.5 rounded-lg text-sm font-600 border-2 border-gray-200 bg-white text-gray-600 transition cursor-pointer';}
+  else{bb.className='tx-type-btn px-3 py-2.5 rounded-lg text-sm font-600 border-2 border-red-500 bg-red-500 text-white transition cursor-pointer';bd.className='tx-type-btn px-3 py-2.5 rounded-lg text-sm font-600 border-2 border-gray-200 bg-white text-gray-600 transition cursor-pointer';}
+}
+
+function addPanelTx(){
+  const admNo=currentPanelAdm;
+  const type=document.getElementById('panelTxType').value;
+  const date=document.getElementById('panelTxDate').value;
+  const amount=+document.getElementById('panelTxAmt').value;
+  const desc=document.getElementById('panelTxDesc').value.trim();
+  if(!date){toast('Select date','error');return;}
+  if(!amount||amount<=0){toast('Enter valid amount','error');return;}
+  if(!desc){toast('Enter description','error');return;}
+
+  const s=state.students.find(x=>x.admission_no===admNo);
+  if(!s)return;
+
+  if(!state.transactions[admNo])state.transactions[admNo]=[];
+  const txs=state.transactions[admNo];
+  const lastBal=txs.length?txs[txs.length-1].balance:s.balance;
+  const newBal=type==='deposit'?lastBal+amount:lastBal-amount;
+
+  txs.push({id:Date.now(),date,type,amount,desc,balance:newBal});
+
+  // Update student summary
+  if(type==='deposit')s.deposit+=amount;
+  else s.borrowings+=amount;
+  s.balance=s.deposit-s.borrowings;
+
+  saveLocal();
+  pushUpdate(admNo,s.deposit,s.borrowings,s.balance);
+  renderPanel();
+  toast('Transaction added & synced');
+}
+
+// Print functions
+function printStudent(admNo){
+  const s=state.students.find(x=>x.admission_no===admNo);
+  if(!s)return;
+  const txs=state.transactions[admNo]||[];
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Statement - ${cap(s.name)}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Courier New',monospace;padding:40px;color:#000}h1{text-align:center;font-size:18px;margin-bottom:4px}h2{text-align:center;font-size:14px;font-weight:normal;margin-bottom:20px;color:#555}.info{display:flex;justify-content:space-between;margin-bottom:20px;padding:10px;border:1px solid #000}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{border:1px solid #000;padding:6px 10px;text-align:left;font-size:12px}th{background:#eee;font-weight:bold}.total{text-align:right;font-size:14px;font-weight:bold;margin:10px 0;padding:10px;border-top:2px solid #000}.signatures{display:flex;justify-content:space-between;margin-top:60px}.sig p{margin-bottom:40px;border-top:1px solid #000;padding-top:5px;width:180px;font-size:12px}</style></head><body>
+  <h1>AASHIYAN STUDENTS UNION</h1><h2>Individual Account Statement</h2>
+  <div class="info"><div><strong>Name:</strong> ${cap(s.name)}</div><div><strong>Adm No:</strong> ${s.admission_no}</div></div>
+  <div class="info"><div><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}</div><div><strong>Status:</strong> ${s.balance<0?'OWES '+fmt(Math.abs(s.balance)):'CLEAR'}</div></div>
+  <table><tr><th>#</th><th>Date</th><th>Type</th><th>Description</th><th style="text-align:right">Amount</th><th style="text-align:right">Balance</th></tr>
+  ${txs.map((t,i)=>`<tr><td>${i+1}</td><td>${fmtDate(t.date)}</td><td>${t.type.toUpperCase()}</td><td>${t.desc}</td><td style="text-align:right">${t.type==='deposit'?'+':'-'}${fmt(t.amount)}</td><td style="text-align:right;font-weight:bold">${fmt(t.balance)}</td></tr>`).join('')}
+  </table>
+  <div class="total">Total Deposited: ${fmt(s.deposit)} &nbsp;&nbsp;|&nbsp;&nbsp; Total Borrowed: ${fmt(s.borrowings)} &nbsp;&nbsp;|&nbsp;&nbsp; Net Balance: <span style="color:${s.balance<0?'red':'green'}">${fmt(s.balance)}</span></div>
+  <div class="signatures"><div class="sig"><p>Student Signature</p></div><div class="sig"><p>Union Treasurer</p></div><div class="sig"><p>Union President</p></div></div>
+  </body></html>`);
+  w.document.close();w.print();
+}
+
+function printDefaulters(){
+  const def=state.students.filter(s=>s.balance<0).sort((a,b)=>a.balance-b.balance);
+  if(!def.length){toast('No defaulters!','info');return;}
+  const total=def.reduce((s,d)=>s+Math.abs(d.balance),0);
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Defaulter List</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Courier New',monospace;padding:40px;color:#000}h1{text-align:center;font-size:18px;margin-bottom:4px}h2{text-align:center;font-size:14px;font-weight:normal;margin-bottom:5px;color:#555}.date{text-align:center;font-size:12px;margin-bottom:20px;color:#777}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{border:1px solid #000;padding:8px 10px;text-align:left;font-size:12px}th{background:#eee;font-weight:bold}.red{color:red;font-weight:bold}.total{text-align:right;font-size:16px;font-weight:bold;margin:10px 0;padding:10px;border-top:2px solid #000}.signatures{display:flex;justify-content:space-between;margin-top:60px}.sig p{margin-bottom:40px;border-top:1px solid #000;padding-top:5px;width:180px;font-size:12px}</style></head><body>
+  <h1>AASHIYAN STUDENTS UNION</h1><h2>Defaulter List — Outstanding Borrowings</h2>
+  <p class="date">Generated: ${new Date().toLocaleDateString('en-IN')} | Total Defaulters: ${def.length}</p>
+  <table><tr><th>#</th><th>Adm No</th><th>Name</th><th style="text-align:right">Deposited</th><th style="text-align:right">Borrowed</th><th style="text-align:right">Due Amount</th></tr>
+  ${def.map((d,i)=>`<tr><td>${i+1}</td><td>${d.admission_no}</td><td>${cap(d.name)}</td><td style="text-align:right">${fmt(d.deposit)}</td><td style="text-align:right">${fmt(d.borrowings)}</td><td class="red" style="text-align:right">${fmt(Math.abs(d.balance))}</td></tr>`).join('')}
+  </table>
+  <div class="total">Total Outstanding: <span class="red">${fmt(total)}</span></div>
+  <div class="signatures"><div class="sig"><p>Union Treasurer</p></div><div class="sig"><p>Union President</p></div></div>
+  </body></html>`);
+  w.document.close();w.print();
+}
+
+// Admin
+function doLogin(){
+  if(document.getElementById('loginPass').value===ADMIN_PASS){
+    state.isAdmin=true;closeModal('loginModal');
+    document.getElementById('adminLabel').textContent='Logout';
+    document.getElementById('adminToggle').querySelector('i').className='fas fa-right-from-bracket w-5 text-center';
+    document.getElementById('loginPass').value='';document.getElementById('loginError').classList.add('hidden');
+    renderPage();toast('Admin access granted');
+  }else{document.getElementById('loginError').classList.remove('hidden');}
+}
+function toggleAdmin(){
+  if(state.isAdmin){state.isAdmin=false;document.getElementById('adminLabel').textContent='Admin Login';document.getElementById('adminToggle').querySelector('i').className='fas fa-shield-halved w-5 text-center';renderPage();toast('Logged out','info');}
+  else{document.getElementById('loginError').classList.add('hidden');document.getElementById('loginPass').value='';openModal('loginModal');setTimeout(()=>document.getElementById('loginPass').focus(),100);}
+}
+
+// Init
+async function init(){
+  loadLocal();
+  document.getElementById('footerTime').textContent='Connecting...';
+  document.getElementById('statusDot').style.background='#f59e0b';
+  await fetchSheet();
+  if(isSheetConnected){document.getElementById('statusDot').style.background='#22c55e';toast('Google Sheet connected');}
+  else{document.getElementById('statusDot').style.background='#ef4444';toast('Sheet offline — using local data','warning');}
+
+  document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>navigate(n.dataset.page)));
+  document.getElementById('adminToggle').addEventListener('click',toggleAdmin);
+  document.getElementById('studentSearch').addEventListener('input',e=>{state.filters.sSearch=e.target.value;renderStudents();});
+  document.getElementById('walletSearch').addEventListener('input',e=>{state.filters.wSearch=e.target.value;renderWallet();});
+  document.getElementById('uploadBtn').addEventListener('click',()=>{['upTitle','upCat'].forEach(i=>document.getElementById(i).value='');document.getElementById('upFile').value='';document.getElementById('upPreview').classList.add('hidden');uploadFileData=null;openModal('uploadModal');});
+  document.getElementById('addAchBtn').addEventListener('click',()=>{['achTitle','achDesc'].forEach(i=>document.getElementById(i).value='');document.getElementById('achDate').value=todayStr();openModal('achModal');});
+
+  function ut(){document.getElementById('footerTime').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+' · '+(isSheetConnected?'Sheet Synced':'Local Mode');}
+  ut();setInterval(ut,30000);
+  renderDash();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>closeModal(m.id));closePanel();}});
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
